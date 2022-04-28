@@ -42,6 +42,8 @@ echo \
 
 apt update
 apt install docker-ce docker-ce-cli containerd.io -y
+apt install php libapache2-mod-php php-mysql -y
+systemctl restart apache2.service
 
 git clone https://github.com/leoyulee/PHPCourseManagement.git
 
