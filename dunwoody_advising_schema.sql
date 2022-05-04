@@ -23,6 +23,9 @@ foreign key (advisor_id) references USER_TBL (user_id),
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (user_id)
 );
+-- Sample values
+-- insert into USER_TBL (first_name) values ("Anders");
+-- select * from user_tbl;
 
 create table COMMENT_TBL (
 comment_id int primary key,
@@ -35,10 +38,6 @@ foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 foreign key (user_id) references USER_TBL (user_id)
 );
 
-
--- insert into USER_TBL (first_name) values ("Anders");
--- select * from user_tbl;
-
 create table PROGRAM_TBL(
 program_id int AUTO_INCREMENT,
 program_code varchar(10),
@@ -48,6 +47,43 @@ program_credits int,
 comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (program_id)
+);
+-- Sample values
+insert into PROGRAM_TBL
+(program_code,program_name,program_description,program_credits)
+values
+('SENG','Software Engineering','The Bachelor of Science in Software Engineering will prepare you to successfully develop, test, manage, implement, deploy, and maintain software products. Learn how to work collaboratively in a team environment, complete hands-on projects, and use quality tools and data to anticipate and solve issues in the engineering process.',60),
+('MECH','Mechanical Engineering','placeholder',60);
+
+create table ROLE_TBL(
+role_id int AUTO_INCREMENT,
+role_name varchar(20),
+role_description text,
+comment_set_id int,
+foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
+primary key(role_id)
+);
+-- Sample values
+insert into ROLE_TBL
+(role_name, role_description)
+values
+('student', 'A person that is looking to finish the program'),
+('instructor', 'A person that is instructing students in the program'),
+('advisor', 'A person that is providing scheduling assistance for the student');
+
+create table USER_PROGRAM_LNK(
+user_id int,
+program_id int,
+role_id int,
+comment_set_id int,
+foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
+constraint user_id_fk5
+foreign key (user_id) references USER_TBL (user_id),
+constraint program_id_fk4
+foreign key (program_id) references PROGRAM_TBL (program_id),
+constraint role_id_fk
+foreign key (role_id) references ROLE_TBL(role_id),
+primary key (user_id, program_id)
 );
 
 create table ACADEMIC_PLAN_TBL(
@@ -67,6 +103,13 @@ constraint user_id_fk2
 foreign key (user_id) references USER_TBL (user_id),
 primary key (plan_id)
 );
+-- DROP TRIGGER IF EXISTS CREATE_ACADEMIC_PLAN_TBL;
+-- CREATE TRIGGER CREATE_ACADEMIC_PLAN_TBL
+-- AFTER INSERT ON ACADEMIC_PLAN_TBL
+-- FOR EACH ROW
+-- IF NEW.established_date IS NULL THEN
+--   SET NEW.established_date = now()
+-- END IF;
 
 -- create table PLAN_COMMENT_TBL(
 -- comment_id int AUTO_INCREMENT,
@@ -79,17 +122,21 @@ primary key (plan_id)
 create table TERM_TBL(
 term_id int AUTO_INCREMENT,
 season varchar(15),
-class_level varchar(2),
 comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (term_id)
 );
+INSERT INTO TERM_TBL
+(season)
+VALUES
+('Spring'),
+('Summer'),
+('Fall');
 
 create table SPECIFIC_TERM_TBL(
 spec_term_id int AUTO_INCREMENT,
 general_term_id int,
 term_year int,
-credits int,
 date_added datetime,
 date_updated datetime,
 comment_set_id int,
@@ -97,14 +144,6 @@ constraint general_term_id_fk
 foreign key (general_term_id) references TERM_TBL(term_id),
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (spec_term_id)
-);
-
-create table ROLE_TBL(
-role_id int AUTO_INCREMENT,
-role_name varchar(20),
-comment_set_id int,
-foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
-primary key(role_id)
 );
 
 create table PREREQUISITE_LNK(
@@ -115,25 +154,28 @@ comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (prerequisite_id)
 );
+
 create table COURSE_TBL(
 course_id int AUTO_INCREMENT,
 term_id int,
-course_code varchar(15),
-course_description text,
 prerequisite_id int,
 program_id int,
+course_code varchar(15),
+course_name varchar(30),
+course_description text,
+credits int,
 required boolean,
 instruction_type varchar(15),
-category varchar(25),
-sub_category varchar(25),
+-- category varchar(25),
+-- sub_category varchar(25),
 comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 constraint term_id_fk
 foreign key (term_id) references TERM_TBL (term_id),
-constraint program_id_fk2
-foreign key (program_id) references PROGRAM_TBL (program_id),
 constraint prerequisite_id_fk
 foreign key (prerequisite_id) references PREREQUISITE_LNK (prerequisite_id),
+constraint program_id_fk2
+foreign key (program_id) references PROGRAM_TBL (program_id),
 primary key (course_id)
 );
 
@@ -151,6 +193,7 @@ create table CLASS_TBL(
 class_id int AUTO_INCREMENT,
 course_id int,
 spec_term_id int,
+section_code int(2),
 start_date date,
 end_date date,
 comment_set_id int,
@@ -193,6 +236,7 @@ ptc_lnk_id int AUTO_INCREMENT,
 plan_id int,
 term_id int,
 course_id int,
+class_level varchar(2),
 comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 constraint plan_id_fk3
@@ -204,29 +248,17 @@ foreign key (course_id) references COURSE_TBL(course_id),
 primary key(ptc_lnk_id)
 );
 
--- create table PTC_COMMENT_TBL(
--- ptc_comment_id int AUTO_INCREMENT,
--- ptc_lnk_id int,
--- comment_text text,
--- constraint ptc_lnk_id_fk
--- foreign key (ptc_lnk_id) references PLAN_TERM_COURSE_LNK(ptc_lnk_id),
--- primary key (ptc_comment_id)
--- );
-
-
-create table USER_PROGRAM_LNK(
-user_id int,
-program_id int,
-role_id int,
+create table INSTRUCTOR_LNK(
+faculty_id int,
+course_id int,
+is_primary boolean,
 comment_set_id int,
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
-constraint user_id_fk5
-foreign key (user_id) references USER_TBL (user_id),
-constraint program_id_fk4
-foreign key (program_id) references PROGRAM_TBL (program_id),
-constraint role_id_fk
-foreign key (role_id) references ROLE_TBL(role_id),
-primary key (user_id, program_id)
+constraint faculty_id_fk
+foreign key (faculty_id) references USER_TBL (user_id),
+constraint course_id_fk6
+foreign key (course_id) references COURSE_TBL (course_id),
+primary key (faculty_id, course_id)
 );
 
 create table TRACK_TBL(
@@ -252,19 +284,6 @@ foreign key (track_id) references TRACK_TBL (track_id),
 constraint program_id_fk5
 foreign key (program_id) references PROGRAM_TBL (program_id),
 primary key (course_track_program_id)
-);
-
-create table INSTRUCTOR_LNK(
-faculty_id int,
-course_id int,
-is_primary boolean,
-comment_set_id int,
-foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
-constraint faculty_id_fk
-foreign key (faculty_id) references USER_TBL (user_id),
-constraint course_id_fk6
-foreign key (course_id) references COURSE_TBL (course_id),
-primary key (faculty_id, course_id)
 );
 
 create table JOBSHEET_TBL(
@@ -478,12 +497,15 @@ model Course {
   //termId      String?
 }
 */
+
+/*
 drop view if exists Course;
 CREATE VIEW Course AS
 SELECT COURSE_TBL.course_id, COURSE_TBL.program_id as course_program_id, PROGRAM_TBL.program_id, PROGRAM_TBL.program_name as title,
 COURSE_TBL.course_code as code, PROGRAM_TBL.program_credits as credits,
 COURSE_TBL.course_description as description
 from COURSE_TBL JOIN PROGRAM_TBL ON COURSE_TBL.program_id = PROGRAM_TBL.program_id;
+*/
 
 /*
 CREATE VIEW Account
