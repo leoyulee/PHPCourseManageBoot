@@ -253,9 +253,49 @@ create table course_history_tbl(
   -- sub_category varchar(25),
   comment_set_id int
 );
-DROP TRIGGER IF EXISTS COURSE_HISTORY_TBL_TRG;
+DROP TRIGGER IF EXISTS COURSE_CREATE_HISTORY_TBL_TRG;
 DELIMITER $$
-CREATE TRIGGER COURSE_HISTORY_TBL_TRG
+CREATE TRIGGER COURSE_CREATE_HISTORY_TBL_TRG
+AFTER INSERT ON COURSE_TBL
+FOR EACH ROW
+BEGIN
+declare uid BIGINT;
+set uid = uuid_short();
+insert into HISTORY_TAG_TBL
+(history_tag_id,history_state_id,time_occurred)
+values (uid, 1, now());
+insert into COURSE_HISTORY_TBL
+(history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
+select uid, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
+from course_tbl
+where course_id = NEW.course_id;
+END
+$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS COURSE_UPDATE_HISTORY_TBL_TRG;
+DELIMITER $$
+CREATE TRIGGER COURSE_UPDATE_HISTORY_TBL_TRG
+AFTER UPDATE ON COURSE_TBL
+FOR EACH ROW
+BEGIN
+declare uid BIGINT;
+set uid = uuid_short();
+insert into HISTORY_TAG_TBL
+(history_tag_id,history_state_id,time_occurred)
+values (uid, 2, now());
+insert into COURSE_HISTORY_TBL
+(history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
+select uid, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
+from course_tbl
+where course_id = OLD.course_id;
+END
+$$
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS COURSE_UPDATE_HISTORY_TBL_TRG;
+DELIMITER $$
+CREATE TRIGGER COURSE_UPDATE_HISTORY_TBL_TRG
 BEFORE UPDATE ON COURSE_TBL
 FOR EACH ROW
 BEGIN
