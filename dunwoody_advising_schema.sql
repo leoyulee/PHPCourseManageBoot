@@ -6,6 +6,26 @@ create table COMMENT_SET (
     comment_set_id int AUTO_INCREMENT, primary key (comment_set_id)
 );
 
+create table HISTORY_STATE_REF(
+	history_state_id int AUTO_INCREMENT,
+  history_state_name varchar(15),
+  primary key (history_state_id)
+);
+insert into HISTORY_STATE_REF
+(history_state_name)
+VALUES
+('created'),
+('updated'),
+('deleted');
+create table HISTORY_TAG_TBL(
+	history_tag_id BIGINT UNSIGNED,
+  history_state_id int,
+  time_occurred datetime,
+  constraint history_state_fk
+  foreign key (history_state_id) references HISTORY_STATE_REF (history_state_id),
+  primary key (history_tag_id)
+);
+
 create table USER_TBL (
 user_id int AUTO_INCREMENT,
 advisor_id int,
@@ -14,15 +34,43 @@ last_name varchar(50),
 email varchar(50),
 user_password varchar(50),
 is_admin boolean,
-date_added datetime,
-last_modified datetime,
-date_deleted datetime,
 comment_set_id int,
 constraint advisor_id_fk
 foreign key (advisor_id) references USER_TBL (user_id),
 foreign key (comment_set_id) references COMMENT_SET(comment_set_id),
 primary key (user_id)
 );
+create table USER_HISTORY_TBL (
+HISTORY_TAG_ID BIGINT UNSIGNED,
+user_id int,
+advisor_id int,
+first_name varchar(50),
+last_name varchar(50),
+email varchar(50),
+user_password varchar(50),
+is_admin boolean,
+comment_set_id int,
+primary key (user_id)
+);
+DROP TRIGGER IF EXISTS user_history_tbl_trg;
+DELIMITER $$
+CREATE TRIGGER user_history_tbl_trg
+BEFORE UPDATE ON user_tbl
+FOR EACH ROW
+BEGIN
+declare uid BIGINT;
+set uid = uuid_short();
+insert into HISTORY_TAG_TBL
+(history_tag_id,history_state_id,time_occurred)
+values (uid, 2, now());
+insert into user_history_tbl
+(history_tag_id, user_id, advisor_id, first_name, last_name, email, user_password)
+select uid, user_id, advisor_id, first_name, last_name, email, user_password
+from user_tbl
+where user_id = OLD.user_id;
+END
+$$
+DELIMITER ;
 -- Sample values
 -- insert into USER_TBL (first_name) values ("Anders");
 -- select * from user_tbl;
@@ -188,6 +236,42 @@ add primary key (prerequisite_id,course_id)
 -- is this adding or replacing primary key?
 -- is there a better way to do this?  seems kludgey
 ;
+
+create table course_history_tbl(
+  history_tag_id BIGINT UNSIGNED,
+  course_id int,
+  term_id int,
+  prerequisite_id int,
+  program_id int,
+  course_code varchar(15),
+  course_name varchar(30),
+  course_description text,
+  credits int,
+  required boolean,
+  instruction_type varchar(15),
+  -- category varchar(25),
+  -- sub_category varchar(25),
+  comment_set_id int
+);
+DROP TRIGGER IF EXISTS COURSE_HISTORY_TBL_TRG;
+DELIMITER $$
+CREATE TRIGGER COURSE_HISTORY_TBL_TRG
+BEFORE UPDATE ON COURSE_TBL
+FOR EACH ROW
+BEGIN
+declare uid BIGINT;
+set uid = uuid_short();
+insert into HISTORY_TAG_TBL
+(history_tag_id,history_state_id,time_occurred)
+values (uid, 2, now());
+insert into COURSE_HISTORY_TBL
+(history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
+select course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
+from course_tbl
+where course_id = OLD.course_id;
+END
+$$
+DELIMITER ;
 
 create table CLASS_TBL(
 class_id int AUTO_INCREMENT,
