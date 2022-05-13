@@ -237,7 +237,7 @@ add primary key (prerequisite_id,course_id)
 -- is there a better way to do this?  seems kludgey
 ;
 
-create table course_history_tbl(
+create table COURSE_HISTORY_TBL(
   history_tag_id BIGINT UNSIGNED,
   course_id int,
   term_id int,
