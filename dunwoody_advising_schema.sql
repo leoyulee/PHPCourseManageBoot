@@ -267,7 +267,7 @@ DELIMITER $$
   insert into COURSE_HISTORY_TBL
   (history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
   select uid, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
-  from course_tbl
+  from COURSE_TBL
   where course_id = NEW.course_id;
   END
 $$
@@ -286,7 +286,7 @@ DELIMITER ;
   insert into COURSE_HISTORY_TBL
   (history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
   select uid, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
-  from course_tbl
+  from COURSE_TBL
   where course_id = OLD.course_id;
   END
 $$
@@ -305,7 +305,7 @@ DELIMITER $$
   insert into COURSE_HISTORY_TBL
   (history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
   select uid, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
-  from course_tbl
+  from COURSE_TBL
   where course_id = OLD.course_id;
   END
 $$
@@ -325,7 +325,7 @@ values (uid, 2, now());
 insert into COURSE_HISTORY_TBL
 (history_tag_id, course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id)
 select course_id, term_id, prerequisite_id, program_id, course_code, course_name, course_description, credits, required, instruction_type, comment_set_id
-from course_tbl
+from COURSE_TBL
 where course_id = OLD.course_id;
 END
 $$
