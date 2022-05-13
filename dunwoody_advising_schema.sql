@@ -54,21 +54,21 @@ primary key (user_id)
 );
 DROP TRIGGER IF EXISTS user_history_tbl_trg;
 DELIMITER $$
-CREATE TRIGGER user_history_tbl_trg
-BEFORE UPDATE ON user_tbl
-FOR EACH ROW
-BEGIN
-declare uid BIGINT;
-set uid = uuid_short();
-insert into HISTORY_TAG_TBL
-(history_tag_id,history_state_id,time_occurred)
-values (uid, 2, now());
-insert into user_history_tbl
-(history_tag_id, user_id, advisor_id, first_name, last_name, email, user_password)
-select uid, user_id, advisor_id, first_name, last_name, email, user_password
-from user_tbl
-where user_id = OLD.user_id;
-END
+  CREATE TRIGGER user_history_tbl_trg
+  BEFORE UPDATE ON USER_TBL
+  FOR EACH ROW
+  BEGIN
+  declare uid BIGINT;
+  set uid = uuid_short();
+  insert into HISTORY_TAG_TBL
+  (history_tag_id,history_state_id,time_occurred)
+  values (uid, 2, now());
+  insert into user_history_tbl
+  (history_tag_id, user_id, advisor_id, first_name, last_name, email, user_password)
+  select uid, user_id, advisor_id, first_name, last_name, email, user_password
+  from user_tbl
+  where user_id = OLD.user_id;
+  END
 $$
 DELIMITER ;
 -- Sample values
