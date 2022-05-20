@@ -180,6 +180,20 @@ VALUES
 ('Spring'),
 ('Summer'),
 ('Fall');
+DROP FUNCTION IF EXISTS randomTermPicker;
+DELIMITER $$
+CREATE FUNCTION randomTermPicker() RETURNS int DETERMINISTIC
+BEGIN
+    DECLARE pickedTerm int;
+        SELECT a.term_id from
+        (SELECT term_id, rand() as seed
+        FROM dunwoody_advising_schema.TERM_TBL
+        ORDER BY seed
+        limit 1) a into pickedTerm;
+    RETURN pickedTerm;
+END
+$$
+DELIMITER ;
 
 create table SPECIFIC_TERM_TBL(
 spec_term_id int AUTO_INCREMENT,
