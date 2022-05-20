@@ -8,10 +8,12 @@ Vagrant.configure("2") do |config|
       dseng.vm.provision :shell, :path => "./app.sh" # run script on boot
       dseng.vm.provision "file", source: "sqlconfig.sql", destination: "sqlconfig.sql" # run configuration script
       dseng.vm.provision "file", source: "dunwoody_advising_schema.sql", destination: "dunwoody_advising_schema.sql" # run schema setup
+      dseng.vm.provision "file", source: "SENG_Fall_2022_course_data.sql", destination: "SENG_Fall_2022_course_data.sql" # add premade courses
       dseng.vm.provision :shell, inline: <<-SHELL
       apt-get update
       mysql -t < sqlconfig.sql
       mysql -t < dunwoody_advising_schema.sql
+      mysql -t < SENG_Fall_2022_course_data.sql
       SHELL
     end
   end
